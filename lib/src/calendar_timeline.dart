@@ -1,4 +1,6 @@
+import 'package:calendar_timeline/src/week_days.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -129,7 +131,19 @@ class _CalendarTimelineState extends State<CalendarTimeline> {
       children: <Widget>[
         if (widget.showYears) _buildYearList(),
         _buildMonthList(),
-        _buildDayList(),
+        WeekDays(
+          days: _days,
+          locale: _locale,
+          leftMargin: widget.leftMargin,
+          goToDay: _goToDay,
+          activeBackgroundDayColor: widget.activeBackgroundDayColor,
+          activeDayColor: widget.activeDayColor,
+          dayColor: widget.dayColor,
+          dayNameColor: widget.dayNameColor,
+          daySelectedIndex: _daySelectedIndex,
+          dotsColor: widget.dotsColor,
+          selectableDayPredicate: widget.selectableDayPredicate,
+        ),
       ],
     );
   }
@@ -154,21 +168,23 @@ class _CalendarTimelineState extends State<CalendarTimeline> {
           return Row(
             children: <Widget>[
               DayItem(
-                isSelected: _daySelectedIndex == index,
-                dayNumber: currentDay.day,
-                shortName: shortName.length > 3
-                    ? shortName.substring(0, 3)
-                    : shortName,
-                onTap: () => _goToDay(index),
-                available: widget.selectableDayPredicate == null
-                    ? true
-                    : widget.selectableDayPredicate!(currentDay),
-                dayColor: widget.dayColor,
-                activeDayColor: widget.activeDayColor,
-                activeDayBackgroundColor: widget.activeBackgroundDayColor,
-                dotsColor: widget.dotsColor,
-                dayNameColor: widget.dayNameColor,
-              ),
+                  isSelected: _daySelectedIndex == index,
+                  dayNumber: currentDay.day,
+                  shortName: shortName.length > 3
+                      ? shortName.substring(0, 3)
+                      : shortName,
+                  onTap: () => _goToDay(index),
+                  available: widget.selectableDayPredicate == null
+                      ? true
+                      : widget.selectableDayPredicate!(currentDay),
+                  dayColor: widget.dayColor,
+                  activeDayColor: widget.activeDayColor,
+                  activeDayBackgroundColor: widget.activeBackgroundDayColor,
+                  dotsColor: widget.dotsColor,
+                  dayNameColor: widget.dayNameColor,
+                  isToday: DateTime.now().month == currentDay.month &&
+                      DateTime.now().day == currentDay.day &&
+                      DateTime.now().year == currentDay.year),
               if (index == _days.length - 1)
                 SizedBox(
                     width: MediaQuery.of(context).size.width -
@@ -179,6 +195,48 @@ class _CalendarTimelineState extends State<CalendarTimeline> {
         },
       ),
     );
+  }
+
+  SizedBox _buildDayList2() {
+    return SizedBox(
+        height: 75,
+        child: PageView.builder(
+          controller: PageController(initialPage: 1),
+          scrollDirection: Axis.horizontal,
+          itemCount: _days.length,
+          itemBuilder: (BuildContext context, int index) {
+            final currentDay = _days[index];
+            final shortName =
+                DateFormat.E(_locale).format(currentDay).capitalize();
+            return Row(
+              children: <Widget>[
+                DayItem(
+                    isSelected: _daySelectedIndex == index,
+                    dayNumber: currentDay.day,
+                    shortName: shortName.length > 3
+                        ? shortName.substring(0, 3)
+                        : shortName,
+                    onTap: () => _goToDay(index),
+                    available: widget.selectableDayPredicate == null
+                        ? true
+                        : widget.selectableDayPredicate!(currentDay),
+                    dayColor: widget.dayColor,
+                    activeDayColor: widget.activeDayColor,
+                    activeDayBackgroundColor: widget.activeBackgroundDayColor,
+                    dotsColor: widget.dotsColor,
+                    dayNameColor: widget.dayNameColor,
+                    isToday: DateTime.now().month == currentDay.month &&
+                        DateTime.now().day == currentDay.day &&
+                        DateTime.now().year == currentDay.year),
+                if (index == _days.length - 1)
+                  SizedBox(
+                      width: MediaQuery.of(context).size.width -
+                          widget.leftMargin -
+                          65)
+              ],
+            );
+          },
+        ));
   }
 
   /// Creates the row with all the months in the calendar. If [widget.showYears] is set to true
@@ -287,13 +345,14 @@ class _CalendarTimelineState extends State<CalendarTimeline> {
   /// and [widget.lastDate]
   _generateDays(DateTime? selectedDate) {
     _days.clear();
-    for (var i = 1; i <= 31; i++) {
-      final day = DateTime(selectedDate!.year, selectedDate.month, i);
-      if (day.difference(widget.firstDate).inDays < 0) continue;
-      if (day.month != selectedDate.month || day.isAfter(widget.lastDate))
-        break;
-      _days.add(day);
-    }
+    // for (var i = 1; i <= 31; i++) {
+    //   final day = DateTime(selectedDate!.year, selectedDate.month, i);
+    //   if (day.difference(widget.firstDate).inDays < 0) continue;
+    //   if (day.month != selectedDate.month || day.isAfter(widget.lastDate))
+    //     break;
+    //   _days.add(day);
+    // }
+    _days.addAll(getFirstDayOfWeeksBetween(widget.firstDate, widget.lastDate));
   }
 
   /// It will populate the [_months] list. If [widget.showYears] is true, it will add from January
@@ -456,4 +515,8 @@ class _CalendarTimelineState extends State<CalendarTimeline> {
       _daySelectedIndex == null &&
       date.month == _selectedDate!.month &&
       date.year == _selectedDate!.year;
+
+  int numberOfWeek() {
+    return (widget.firstDate.difference(widget.lastDate).inDays / 7).ceil();
+  }
 }
