@@ -20,6 +20,10 @@ extension DateCalc on DateTime {
   static List<DateTime> getWeekFirstDayInRange(DateTime start, DateTime end) {
     return getFirstDayOfWeeksBetween(start, end);
   }
+
+  bool isSameDay(DateTime other) {
+    return isDateSameDay(this, other);
+  }
 }
 
 /// Find the first date of the week which contains the provided date.
@@ -47,4 +51,10 @@ List<DateTime> getFirstDayOfWeeksBetween(DateTime start, DateTime end) {
   return List.generate(weeks, (index) {
     return firstDayOfWeek.add(Duration(days: index * 7));
   });
+}
+
+bool isDateSameDay(DateTime date1, DateTime date2) {
+  return date1.day == date2.day &&
+      date1.month == date2.month &&
+      date1.year == date2.year;
 }

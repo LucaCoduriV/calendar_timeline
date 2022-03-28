@@ -29,8 +29,8 @@ class DayItem extends StatelessWidget {
     this.isToday = false,
   }) : super(key: key);
 
-  final double height = 60.0;
-  final double width = 60.0;
+  final double height = 50.0;
+  final double width = 50.0;
 
   _buildDay(BuildContext context) {
     final textStyle = TextStyle(
