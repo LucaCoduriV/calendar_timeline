@@ -298,12 +298,14 @@ class _CalendarTimelineState extends State<CalendarTimeline> {
 
   /// It will reset the calendar to the initial date
   _updateCalendar(DateTime date) {
-    log(_years.indexWhere((element) => date.year == element.year).toString());
     _yearSelectedIndex =
         _years.indexWhere((element) => date.year == element.year);
+
     _moveToYearIndex(_yearSelectedIndex ?? 0);
+
     _monthSelectedIndex =
         _months.indexWhere((element) => date.month == element.month);
+
     _moveToMonthIndex(_monthSelectedIndex ?? 0);
     setState(() {});
   }
