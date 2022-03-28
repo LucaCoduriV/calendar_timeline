@@ -1,16 +1,16 @@
-import 'package:calendar_timeline/calendar_timeline.dart';
-import 'package:calendar_timeline/src/util/string_extension.dart';
+import 'dart:developer';
+
+import 'package:calendar_timeline/src/day_item.dart';
+import 'package:calendar_timeline/src/util/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'day_item.dart';
-
 class WeekDays extends StatelessWidget {
-  final int? daySelectedIndex;
-  final List<DateTime> days;
+  final DateTime? initialDate;
+  final List<DateTime> listOfMondays;
   final String locale;
   final SelectableDayPredicate? selectableDayPredicate;
-  final void Function(int index) goToDay;
+  final void Function(DateTime selectedDay) onDaySelected;
   final Color? dayColor;
   final Color? activeDayColor;
   final Color? activeBackgroundDayColor;
@@ -20,8 +20,8 @@ class WeekDays extends StatelessWidget {
 
   const WeekDays(
       {Key? key,
-      this.daySelectedIndex,
-      required this.days,
+      this.initialDate,
+      required this.listOfMondays,
       required this.locale,
       this.selectableDayPredicate,
       this.dayColor,
@@ -30,56 +30,49 @@ class WeekDays extends StatelessWidget {
       this.dotsColor,
       this.dayNameColor,
       required this.leftMargin,
-      required this.goToDay})
+      required this.onDaySelected})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    log(initialDate.toString());
     return SizedBox(
         height: 75,
         child: PageView.builder(
           controller: PageController(initialPage: 1),
           scrollDirection: Axis.horizontal,
-          itemCount: days.length ~/ 7,
+          itemCount: listOfMondays.length ~/ 7,
           itemBuilder: (BuildContext context, int index) {
-            final currentDay = days[index];
-            final shortName =
-                DateFormat.E(locale).format(currentDay).capitalize();
+            final currentMonday = listOfMondays[index];
             return Row(
-              children: [
-                ...buildOneDay(currentDay, index, shortName),
-                if (index == days.length - 1)
-                  SizedBox(
-                      width:
-                          MediaQuery.of(context).size.width - leftMargin - 65)
-              ],
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: buildWeek(currentMonday, index),
             );
           },
         ));
   }
 
-  List<Widget> buildOneDay(
-    DateTime currentDay,
+  List<Widget> buildWeek(
+    DateTime firstDayOfWeek,
     index,
-    shortName,
   ) {
-    return getWeekDays(currentDay).map((e) {
+    final week = getWeekDays(listOfMondays[index]);
+    return week.map((day) {
+      final shortName = DateFormat.E(locale).format(day).capitalize();
       return DayItem(
-        isSelected: daySelectedIndex == index,
-        dayNumber: currentDay.day,
+        isSelected: initialDate?.isSameDay(day) ?? false,
+        dayNumber: day.day,
         shortName: shortName.length > 3 ? shortName.substring(0, 3) : shortName,
-        onTap: () => goToDay(index),
+        onTap: () => onDaySelected(day),
         available: selectableDayPredicate == null
             ? true
-            : selectableDayPredicate!(currentDay),
+            : selectableDayPredicate!(day),
         dayColor: dayColor,
         activeDayColor: activeDayColor,
         activeDayBackgroundColor: activeBackgroundDayColor,
         dotsColor: dotsColor,
         dayNameColor: dayNameColor,
-        isToday: DateTime.now().month == currentDay.month &&
-            DateTime.now().day == currentDay.day &&
-            DateTime.now().year == currentDay.year,
+        isToday: DateTime.now().isSameDay(day),
       );
     }).toList();
   }
