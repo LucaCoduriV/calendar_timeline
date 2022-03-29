@@ -35,11 +35,11 @@ class WeekDays extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log(initialDate.toString());
+    log(getWeekNumber(initialDate!).toString());
     return SizedBox(
         height: 75,
         child: PageView.builder(
-          controller: PageController(initialPage: 1),
+          controller: PageController(initialPage: getWeekNumber(initialDate!)),
           scrollDirection: Axis.horizontal,
           itemCount: listOfMondays.length ~/ 7,
           itemBuilder: (BuildContext context, int index) {
@@ -75,5 +75,14 @@ class WeekDays extends StatelessWidget {
         isToday: DateTime.now().isSameDay(day),
       );
     }).toList();
+  }
+
+  int getWeekNumber(DateTime date) {
+    return listOfMondays.indexWhere((element) {
+      DateTime target = date.firstDayOfWeek();
+      return element.day == target.day &&
+          element.month == target.month &&
+          element.year == target.year;
+    });
   }
 }

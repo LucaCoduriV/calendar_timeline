@@ -54,7 +54,10 @@ class CalendarTimeline extends StatefulWidget {
     this.locale,
     this.showYears = false,
   })  : assert(
-          initialDate.difference(firstDate).inDays >= 0,
+          initialDate
+                  .difference(firstDate.subtract(Duration(days: 7)))
+                  .inDays >=
+              0,
           'initialDate must be on or after firstDate',
         ),
         assert(
@@ -62,7 +65,7 @@ class CalendarTimeline extends StatefulWidget {
           'initialDate must be on or before lastDate',
         ),
         assert(
-          !firstDate.isAfter(lastDate),
+          !firstDate.subtract(Duration(days: 7)).isAfter(lastDate),
           'lastDate must be on or after firstDate',
         ),
         assert(
@@ -314,7 +317,8 @@ class _CalendarTimelineState extends State<CalendarTimeline> {
     _moveToYearIndex(index);
     _yearSelectedIndex = index;
     _monthSelectedIndex = null;
-    //_daySelectedIndex = null;
+    _selectedDate =
+        DateTime(_years[index].year, _selectedDate!.month, _selectedDate!.day);
     final date = _years[index];
     _updateCalendar(date.year == _selectedDate!.year ? _selectedDate! : date);
   }
